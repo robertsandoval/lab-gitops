@@ -1,0 +1,14 @@
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+metadata:
+  name: hostedcluster
+spec:
+  configuration:
+    oauth:
+      identityProviders:
+        - name: htpasswd_provider
+          mappingMethod: claim
+          type: HTPasswd
+          htpasswd:
+            fileData:
+              name: htpass-secret

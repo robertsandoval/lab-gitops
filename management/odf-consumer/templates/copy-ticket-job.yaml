@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: copy-odf-ticket-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        sandoval.lab/module: odf-client
+    spec:
+      serviceAccountName: odf-onboarding-{{ .Values.clusterName }}
+      restartPolicy: OnFailure
+      containers:
+        - name: copy
+          image: registry.redhat.io/openshift4/ose-cli:v4.22
+          env:
+            - name: CLUSTER_NAME
+              value: {{ .Values.clusterName | quote }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -eu
+              ns=openshift-storage
+              dest="odf-onboarding-${CLUSTER_NAME}"
+              if oc -n "$ns" get secret "$dest" >/dev/null 2>&1; then
+                echo "secret ${dest} already exists"
+                exit 0
+              fi
+              for _ in $(seq 1 60); do
+                sec=$(oc -n "$ns" get storageconsumer "$CLUSTER_NAME" -o jsonpath='{.status.onboardingTicketSecret.name}' 2>/dev/null || true)
+                if [ -n "$sec" ]; then
+                  token=$(oc -n "$ns" get secret "$sec" -o jsonpath='{.data.onboarding-token}' | base64 -d)
+                  oc -n "$ns" create secret generic "$dest" --from-literal=onboarding-token="$token"
+                  echo "created ${dest} from ${sec}"
+                  exit 0
+                fi
+                sleep 10
+              done
+              echo "StorageConsumer/${CLUSTER_NAME} has no onboarding ticket yet" >&2
+              exit 1

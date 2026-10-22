@@ -1,0 +1,19 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: operator-group-default
+  namespace: openshift-gitops
+placementRef:
+  name: operator-group-default
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+subjects:
+  - name: openshift-virtualization-operator
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy
+  - name: odf-client-operator
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy
+  - name: odf-storage-client
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy

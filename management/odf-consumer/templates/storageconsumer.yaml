@@ -1,0 +1,16 @@
+apiVersion: ocs.openshift.io/v1alpha1
+kind: StorageConsumer
+metadata:
+  name: {{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+spec:
+  enable: false
+  storageClasses:
+    - name: ocs-storagecluster-ceph-rbd
+    - name: ocs-storagecluster-cephfs
+    - name: ocs-storagecluster-ceph-rbd-virtualization
+  volumeSnapshotClasses:
+    - name: ocs-storagecluster-rbdplugin-snapclass
+    - name: ocs-storagecluster-cephfsplugin-snapclass

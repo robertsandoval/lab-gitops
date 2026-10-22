@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: guest-virtualization
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - clusterDecisionResource:
+        configMapRef: ocm-placement-generator
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: operator-group-default
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: '{{.name}}-virtualization'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:robertsandoval/lab-gitops.git
+        targetRevision: main
+        path: guest/virtualization
+      destination:
+        server: '{{.server}}'
+        namespace: openshift-cnv
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - SkipDryRunOnMissingResource=true

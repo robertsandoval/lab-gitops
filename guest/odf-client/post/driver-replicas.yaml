@@ -1,0 +1,34 @@
+# Merge-patches for after StorageClient hub-odf is Connected.
+# Not referenced by ../kustomization.yaml.
+# Client-side apply of these partial Driver objects drops fields the operator owns.
+# Use oc patch --type=merge.
+#
+# ceph-csi-operator defaults controllerPlugin.replicas to 2. These guests are
+# single-node, so the second replica stays Pending. The client operator sets
+# hostNetwork and leaves replicas alone, so this patch survives reconcile.
+apiVersion: csi.ceph.io/v1alpha1
+kind: Driver
+metadata:
+  name: openshift-storage.rbd.csi.ceph.com
+  namespace: openshift-storage-client
+spec:
+  controllerPlugin:
+    replicas: 1
+---
+apiVersion: csi.ceph.io/v1alpha1
+kind: Driver
+metadata:
+  name: openshift-storage.cephfs.csi.ceph.com
+  namespace: openshift-storage-client
+spec:
+  controllerPlugin:
+    replicas: 1
+---
+apiVersion: csi.ceph.io/v1alpha1
+kind: Driver
+metadata:
+  name: openshift-storage.nfs.csi.ceph.com
+  namespace: openshift-storage-client
+spec:
+  controllerPlugin:
+    replicas: 1

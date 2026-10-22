@@ -1,0 +1,13 @@
+# Not applied. hub/storageclient-policy.yaml creates StorageClient/hub-odf and
+# fills onboardingTicket from Secret/odf-onboarding-<cluster>. This placeholder
+# must not be synced.
+apiVersion: ocs.openshift.io/v1alpha1
+kind: StorageClient
+metadata:
+  name: hub-odf
+  namespace: openshift-storage-client
+  labels:
+    sandoval.lab/module: odf-client
+spec:
+  storageProviderEndpoint: "10.1.4.40:50061"
+  onboardingTicket: REPLACE_ONBOARDING_TICKET

@@ -1,0 +1,20 @@
+# Merge-patches for after StorageClient hub-odf is Connected.
+# Not referenced by ../kustomization.yaml.
+# Client-side apply of these partial objects drops fields the operator owns.
+# Use oc patch --type=merge.
+#
+# Keep ocs-storagecluster-ceph-rbd as the only default StorageClass.
+# kubevirt-csi-infra-default is the platform class that otherwise stays default.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: kubevirt-csi-infra-default
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ocs-storagecluster-ceph-rbd
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"

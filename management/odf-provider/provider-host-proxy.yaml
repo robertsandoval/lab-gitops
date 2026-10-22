@@ -1,0 +1,99 @@
+# Host-network TCP proxy for the ODF provider.
+# KubeVirt guests can open a port bound on the node IP (same path as the Ceph
+# monitors) and cannot open a MetalLB VIP in front of the provider pod.
+# Listens on each virtualization node at :50061 and forwards to the
+# operator Service ocs-provider-server:50051. Host port 50051 is taken by
+# NFS Ganesha on the active NFS node. TLS is passed through unchanged.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ocs-provider-host-proxy
+  namespace: openshift-storage
+  labels:
+    app.kubernetes.io/name: ocs-provider-host-proxy
+    sandoval.lab/module: odf-client
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ocs-provider-host-proxy-privileged
+  namespace: openshift-storage
+  labels:
+    app.kubernetes.io/name: ocs-provider-host-proxy
+    sandoval.lab/module: odf-client
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:openshift:scc:privileged
+subjects:
+  - kind: ServiceAccount
+    name: ocs-provider-host-proxy
+    namespace: openshift-storage
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ocs-provider-host-proxy
+  namespace: openshift-storage
+  labels:
+    app.kubernetes.io/name: ocs-provider-host-proxy
+    sandoval.lab/module: odf-client
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ocs-provider-host-proxy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ocs-provider-host-proxy
+        sandoval.lab/module: odf-client
+    spec:
+      serviceAccountName: ocs-provider-host-proxy
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        node.sandoval.lab/role: virtualization
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: proxy
+          image: quay.io/openshift/origin-cli:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: OCS_PROVIDER_SERVER_SERVICE_HOST
+              value: ocs-provider-server.openshift-storage.svc
+            - name: OCS_PROVIDER_SERVER_SERVICE_PORT
+              value: "50051"
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -eu
+              exec chroot /host /usr/bin/socat \
+                TCP-LISTEN:50061,bind=0.0.0.0,fork,reuseaddr \
+                TCP:${OCS_PROVIDER_SERVER_SERVICE_HOST}:${OCS_PROVIDER_SERVER_SERVICE_PORT}
+          volumeMounts:
+            - name: host
+              mountPath: /host
+          ports:
+            - name: grpc
+              containerPort: 50061
+              hostPort: 50061
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 50061
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: host
+          hostPath:
+            path: /
+            type: Directory

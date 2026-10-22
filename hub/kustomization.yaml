@@ -10,6 +10,7 @@ resources:
   - gitopscluster.yaml
   - ocm-placement-generator.yaml
   - clusterrolebinding.yaml
+  - applicationset-placement-rbac.yaml
   - applicationset-virtualization.yaml
   - applicationset-odf-consumer.yaml
   - storageclient-policy.yaml

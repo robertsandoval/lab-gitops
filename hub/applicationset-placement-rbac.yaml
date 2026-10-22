@@ -1,0 +1,24 @@
+# The ApplicationSet controller reads PlacementDecisions for the
+# clusterDecisionResource generator. The default GitOps install does not
+# grant that API.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: openshift-gitops-applicationset-controller-placements
+rules:
+  - apiGroups: ["cluster.open-cluster-management.io"]
+    resources: ["placementdecisions"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: openshift-gitops-applicationset-controller-placements
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: openshift-gitops-applicationset-controller-placements
+subjects:
+  - kind: ServiceAccount
+    name: openshift-gitops-applicationset-controller
+    namespace: openshift-gitops

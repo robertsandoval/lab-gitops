@@ -5,6 +5,8 @@ metadata:
   namespace: openshift-storage
   labels:
     sandoval.lab/module: odf-client
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   backoffLimit: 6
   template:
@@ -44,6 +46,9 @@ spec:
                   sleep 10
                   continue
                 fi
+                # A FailedPrecondition from the provider makes the client stop
+                # reconciling until the StorageClient changes.
+                oc --kubeconfig="$guest" annotate storageclient hub-odf "sandoval.lab/consumer-enabled=$(date +%s)" --overwrite >/dev/null
                 if ! oc --kubeconfig="$guest" get sc ocs-storagecluster-ceph-rbd >/dev/null 2>&1; then
                   echo "ocs-storagecluster-ceph-rbd is not ready"
                   sleep 10

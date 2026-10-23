@@ -6,7 +6,9 @@ metadata:
   labels:
     sandoval.lab/module: odf-client
 spec:
-  enable: true
+  # Leave this disabled until the client has onboarded. Enabling it drops the
+  # onboarding ticket, and a disabled consumer is what issues that ticket.
+  enable: false
   storageClasses:
     - name: ocs-storagecluster-ceph-rbd
     - name: ocs-storagecluster-cephfs

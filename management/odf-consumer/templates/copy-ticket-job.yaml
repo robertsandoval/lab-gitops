@@ -33,6 +33,11 @@ spec:
               for _ in $(seq 1 60); do
                 sec=$(oc -n "$src_ns" get storageconsumer "$CLUSTER_NAME" -o jsonpath='{.status.onboardingTicketSecret.name}' 2>/dev/null || true)
                 if [ -z "$sec" ]; then
+                  enabled=$(oc -n "$src_ns" get storageconsumer "$CLUSTER_NAME" -o jsonpath='{.spec.enable}' 2>/dev/null || true)
+                  if [ "$enabled" = "true" ] && oc -n "$dest_ns" get secret "$dest" >/dev/null 2>&1; then
+                    echo "consumer is enabled and ${dest} already exists"
+                    exit 0
+                  fi
                   sleep 10
                   continue
                 fi

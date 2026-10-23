@@ -22,7 +22,7 @@ The htpasswd identity provider is not in this repo. Apply it by hand from `~/ope
 `Placement/operator-group-default` in `openshift-gitops` selects managed clusters labeled `operator-group=default`. One `PlacementBinding` attaches five policies:
 
 - `openshift-virtualization-operator` installs `kubevirt-hyperconverged` from `redhat-operators` / `stable` into `openshift-cnv`.
-- `odf-client-operator` installs `ocs-client-operator` from `redhat-operators` / `stable-4.22` into `openshift-storage-client`.
+- `odf-client-operator` installs `ocs-client-operator` from `redhat-operators` / `stable-4.21` into `openshift-storage-client`.
 - `nmstate-operator` installs `kubernetes-nmstate-operator` from `redhat-operators` / `stable` into `openshift-nmstate`.
 - `mtv-operator` installs `mtv-operator` from `redhat-operators` / `release-v2.12` into `openshift-mtv`.
 - `odf-storage-client` creates cluster-scoped `StorageClient/hub-odf` with endpoint `10.1.4.40:50061`. The ticket comes from `Secret/odf-onboarding-<cluster>` in `openshift-gitops`. `fromSecret` can only read secrets in the policy namespace, returns the data still base64-encoded, and ACM encrypts it. Decode on the guest after decryption: `{{ "{{hub fromSecret ... hub}}" | base64dec }}`.

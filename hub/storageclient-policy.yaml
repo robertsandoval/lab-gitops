@@ -19,8 +19,9 @@ spec:
         spec:
           remediationAction: enforce
           severity: high
-          # fromSecret returns the secret data already decoded. Do not base64-decode it again.
-          # The template stays unresolved until Secret/odf-onboarding-<cluster> exists.
+          # fromSecret returns the Secret data still base64-encoded. The provider
+          # ticket is "<payload>.<signature>", so decode it once. The template
+          # stays unresolved until Secret/odf-onboarding-<cluster> exists.
           object-templates-raw: |
             - complianceType: musthave
               objectDefinition:
@@ -32,4 +33,4 @@ spec:
                     sandoval.lab/module: odf-client
                 spec:
                   storageProviderEndpoint: "10.1.4.40:50061"
-                  onboardingTicket: '{{hub fromSecret "openshift-gitops" (printf "odf-onboarding-%s" .ManagedClusterName) "onboarding-token" hub}}'
+                  onboardingTicket: '{{hub fromSecret "openshift-gitops" (printf "odf-onboarding-%s" .ManagedClusterName) "onboarding-token" | base64dec hub}}'

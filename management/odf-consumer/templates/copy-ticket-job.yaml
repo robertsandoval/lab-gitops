@@ -27,19 +27,28 @@ spec:
               src_ns=openshift-storage
               dest_ns=openshift-gitops
               dest="odf-onboarding-${CLUSTER_NAME}"
-              if oc -n "$dest_ns" get secret "$dest" >/dev/null 2>&1; then
-                echo "secret ${dest} already exists"
-                exit 0
-              fi
+              tok=/tmp/onboarding-token
               for _ in $(seq 1 60); do
                 sec=$(oc -n "$src_ns" get storageconsumer "$CLUSTER_NAME" -o jsonpath='{.status.onboardingTicketSecret.name}' 2>/dev/null || true)
-                if [ -n "$sec" ]; then
-                  token=$(oc -n "$src_ns" get secret "$sec" -o jsonpath='{.data.onboarding-token}' | base64 -d)
-                  oc -n "$dest_ns" create secret generic "$dest" --from-literal=onboarding-token="$token"
-                  echo "created ${dest_ns}/${dest} from ${sec}"
-                  exit 0
+                if [ -z "$sec" ]; then
+                  sleep 10
+                  continue
                 fi
-                sleep 10
+                # The ticket is JSON plus a binary signature. Do not pass it
+                # through a shell variable or the signature is corrupted.
+                oc -n "$src_ns" get secret "$sec" -o jsonpath='{.data.onboarding-token}' | base64 -d > "$tok"
+                new=$(sha256sum "$tok" | awk '{print $1}')
+                if oc -n "$dest_ns" get secret "$dest" >/dev/null 2>&1; then
+                  existing=$(oc -n "$dest_ns" get secret "$dest" -o jsonpath='{.data.onboarding-token}' | base64 -d | sha256sum | awk '{print $1}')
+                  if [ "$existing" = "$new" ]; then
+                    echo "secret ${dest} already matches ${sec}"
+                    exit 0
+                  fi
+                  oc -n "$dest_ns" delete secret "$dest"
+                fi
+                oc -n "$dest_ns" create secret generic "$dest" --from-file=onboarding-token="$tok"
+                echo "created ${dest_ns}/${dest} from ${sec}"
+                exit 0
               done
               echo "StorageConsumer/${CLUSTER_NAME} has no onboarding ticket yet" >&2
               exit 1

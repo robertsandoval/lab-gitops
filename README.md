@@ -43,19 +43,6 @@ The `wait-odf-client` Job applies the same merge patches as `guest/odf-client/po
 
 Those files are not a kustomize root. Applying them directly drops fields the operator owns.
 
-## Cleaning up a demo cluster
-
-`scripts/cleanup-managed-cluster.sh` removes one hosted cluster so the same name can be created again. It defaults to `managed-cluster1`.
-
-```bash
-scripts/cleanup-managed-cluster.sh
-scripts/cleanup-managed-cluster.sh other-cluster
-```
-
-Run it to completion before creating that name again. It removes the GitOps labels, deletes `StorageClient/hub-odf` before the consumer, prunes the Argo CD applications, deletes the copied onboarding secret, and deletes the HostedCluster. If the guest API is already gone, it clears finalizers only on `klusterlet-<cluster>`.
-
-It does not touch `local-cluster`, the hub Klusterlet, the internal StorageConsumer, the provider LoadBalancer on `10.1.4.91`, or the host-network proxy. The identity provider is separate and is not removed.
-
 ## UI
 
 Start `scripts/pin-api-vip.sh` before the first create and leave it running. It pins each new `Service/kube-apiserver` to `metallb.io/address-pool=machine-pool` and `metallb.io/loadBalancerIPs=10.1.4.90`, then waits through the delete and does it again on the next create. Stop it with Ctrl-C. The pin has to land before worker ignition is written. DNS for `api.managed-cluster1.sandoval.lab` is already `10.1.4.90`.

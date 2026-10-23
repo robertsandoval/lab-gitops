@@ -21,7 +21,7 @@ The htpasswd identity provider is not in this repo. Apply it by hand from `~/ope
 
 - `openshift-virtualization-operator` installs `kubevirt-hyperconverged` from `redhat-operators` / `stable` into `openshift-cnv`.
 - `odf-client-operator` installs `ocs-client-operator` from `redhat-operators` / `stable-4.21` into `openshift-storage-client`.
-- `odf-storage-client` creates cluster-scoped `StorageClient/hub-odf` with endpoint `10.1.4.40:50061`. The ticket comes from `Secret/odf-onboarding-<cluster>` in `openshift-gitops`. `fromSecret` can only read secrets in the policy namespace and returns the data still base64-encoded. Decode it on the guest, after ACM decrypts the value: `{{hub fromSecret ... hub | base64dec}}`.
+- `odf-storage-client` creates cluster-scoped `StorageClient/hub-odf` with endpoint `10.1.4.40:50061`. The ticket comes from `Secret/odf-onboarding-<cluster>` in `openshift-gitops`. `fromSecret` can only read secrets in the policy namespace, returns the data still base64-encoded, and ACM encrypts it. Decode on the guest after decryption: `{{ "{{hub fromSecret ... hub}}" | base64dec }}`.
 
 `GitOpsCluster/operator-group-default` registers those placement decisions with the hub Argo CD. Three ApplicationSets then sync:
 

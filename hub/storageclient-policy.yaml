@@ -19,9 +19,9 @@ spec:
         spec:
           remediationAction: enforce
           severity: high
-          # fromSecret returns the Secret data still base64-encoded, then ACM
-          # encrypts that result. base64dec stays outside the hub delimiters so
-          # it runs on the guest after decryption and restores "<payload>.<signature>".
+          # fromSecret reads Secret data still base64-encoded and ACM encrypts that
+          # result. The hub template must close before base64dec so the guest
+          # decrypts first, then restores the "<payload>.<signature>" ticket.
           # The template stays unresolved until Secret/odf-onboarding-<cluster> exists.
           object-templates-raw: |
             - complianceType: musthave
@@ -34,4 +34,4 @@ spec:
                     sandoval.lab/module: odf-client
                 spec:
                   storageProviderEndpoint: "10.1.4.40:50061"
-                  onboardingTicket: '{{hub fromSecret "openshift-gitops" (printf "odf-onboarding-%s" .ManagedClusterName) "onboarding-token" hub | base64dec}}'
+                  onboardingTicket: '{{ "{{hub fromSecret "openshift-gitops" (printf "odf-onboarding-%s" .ManagedClusterName) "onboarding-token" hub}}" | base64dec }}'

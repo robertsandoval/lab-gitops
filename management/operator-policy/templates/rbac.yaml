@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: enable-operator-policy-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: operator-policy
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: enable-operator-policy
+  namespace: {{ .Values.clusterName }}
+  labels:
+    sandoval.lab/module: operator-policy
+rules:
+  - apiGroups: ["addon.open-cluster-management.io"]
+    resources: ["managedclusteraddons"]
+    resourceNames: ["config-policy-controller"]
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: enable-operator-policy
+  namespace: {{ .Values.clusterName }}
+  labels:
+    sandoval.lab/module: operator-policy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: enable-operator-policy
+subjects:
+  - kind: ServiceAccount
+    name: enable-operator-policy-{{ .Values.clusterName }}
+    namespace: openshift-storage

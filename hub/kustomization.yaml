@@ -13,5 +13,6 @@ resources:
   - applicationset-placement-rbac.yaml
   - applicationset-virtualization.yaml
   - applicationset-odf-consumer.yaml
+  - applicationset-operator-policy.yaml
   - storageclient-policy.yaml
   - application.yaml

@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: enable-operator-policy-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: operator-policy
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        sandoval.lab/module: operator-policy
+    spec:
+      serviceAccountName: enable-operator-policy-{{ .Values.clusterName }}
+      restartPolicy: OnFailure
+      containers:
+        - name: annotate
+          image: registry.redhat.io/openshift4/ose-cli:v4.22
+          env:
+            - name: CLUSTER_NAME
+              value: {{ .Values.clusterName | quote }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -eu
+              addon=config-policy-controller
+              for _ in $(seq 1 60); do
+                if oc -n "$CLUSTER_NAME" get managedclusteraddon "$addon" >/dev/null 2>&1; then
+                  current=$(oc -n "$CLUSTER_NAME" get managedclusteraddon "$addon" -o jsonpath="{.metadata.annotations['operator-policy-disabled']}")
+                  if [ "$current" = "false" ]; then
+                    echo "operator-policy-disabled is already false"
+                    exit 0
+                  fi
+                  oc -n "$CLUSTER_NAME" annotate managedclusteraddon "$addon" operator-policy-disabled=false --overwrite
+                  echo "enabled operator policy on ${CLUSTER_NAME}"
+                  exit 0
+                fi
+                sleep 10
+              done
+              echo "ManagedClusterAddOn/${addon} not found in ${CLUSTER_NAME}" >&2
+              exit 1

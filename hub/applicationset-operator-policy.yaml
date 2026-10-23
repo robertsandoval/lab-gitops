@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: operator-policy
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - clusterDecisionResource:
+        configMapRef: ocm-placement-generator
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: operator-group-default
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: '{{.name}}-operator-policy'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:robertsandoval/lab-gitops.git
+        targetRevision: main
+        path: management/operator-policy
+        helm:
+          values: |
+            clusterName: {{.name}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: openshift-storage
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: operator-policy
+description: Enable the OperatorPolicy controller on a managed cluster config-policy addon.
+type: application
+version: 0.1.0
+appVersion: "2.17"

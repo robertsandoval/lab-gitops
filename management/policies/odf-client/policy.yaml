@@ -29,6 +29,6 @@ spec:
           subscription:
             name: ocs-client-operator
             namespace: openshift-storage-client
-            channel: stable-4.21
+            channel: stable-4.22
             source: redhat-operators
             sourceNamespace: openshift-marketplace

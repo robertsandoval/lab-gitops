@@ -11,7 +11,7 @@ spec:
         configMapRef: ocm-placement-generator
         labelSelector:
           matchLabels:
-            cluster.open-cluster-management.io/placement: operator-group-default
+            cluster.open-cluster-management.io/placement: odf-client-ready
         requeueAfterSeconds: 30
   template:
     metadata:

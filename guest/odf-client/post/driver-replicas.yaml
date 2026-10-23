@@ -1,5 +1,5 @@
-# Merge-patches for after StorageClient hub-odf is Connected.
-# Not referenced by ../kustomization.yaml.
+# Merge-patches applied by the wait-odf-client Job after StorageClient hub-odf
+# is Connected. Not referenced by ../kustomization.yaml.
 # Client-side apply of these partial Driver objects drops fields the operator owns.
 # Use oc patch --type=merge.
 #

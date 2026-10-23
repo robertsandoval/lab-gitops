@@ -6,7 +6,7 @@ metadata:
   labels:
     sandoval.lab/module: odf-client
 spec:
-  enable: false
+  enable: true
   storageClasses:
     - name: ocs-storagecluster-ceph-rbd
     - name: ocs-storagecluster-cephfs

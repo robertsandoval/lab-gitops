@@ -5,6 +5,7 @@ resources:
   - ../management/policies/openshift-virtualization
   - ../management/policies/odf-client
   - placement.yaml
+  - placement-virtualization.yaml
   - placementbinding.yaml
   - managedclustersetbinding.yaml
   - gitopscluster.yaml

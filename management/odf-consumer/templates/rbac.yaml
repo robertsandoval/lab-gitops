@@ -64,3 +64,67 @@ subjects:
   - kind: ServiceAccount
     name: odf-onboarding-{{ .Values.clusterName }}
     namespace: openshift-storage
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  namespace: clusters
+  labels:
+    sandoval.lab/module: odf-client
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["{{ .Values.clusterName }}-admin-kubeconfig"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  namespace: clusters
+  labels:
+    sandoval.lab/module: odf-client
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: odf-client-ready-{{ .Values.clusterName }}
+subjects:
+  - kind: ServiceAccount
+    name: odf-client-ready-{{ .Values.clusterName }}
+    namespace: openshift-storage
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  labels:
+    sandoval.lab/module: odf-client
+rules:
+  - apiGroups: ["cluster.open-cluster-management.io"]
+    resources: ["managedclusters"]
+    resourceNames: ["{{ .Values.clusterName }}"]
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  labels:
+    sandoval.lab/module: odf-client
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: odf-client-ready-{{ .Values.clusterName }}
+subjects:
+  - kind: ServiceAccount
+    name: odf-client-ready-{{ .Values.clusterName }}
+    namespace: openshift-storage

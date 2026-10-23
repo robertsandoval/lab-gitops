@@ -1,3 +1,7 @@
+# Applied only after the ODF client is connected and ocs-storagecluster-ceph-rbd
+# is the default StorageClass. An empty spec makes boot-source import use that
+# default. Creating this earlier binds the catalog images to
+# kubevirt-csi-infra-default, whose StorageProfile has no access mode.
 apiVersion: hco.kubevirt.io/v1beta1
 kind: HyperConverged
 metadata:

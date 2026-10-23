@@ -61,11 +61,10 @@ spec:
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
-          env:
-            - name: OCS_PROVIDER_SERVER_SERVICE_HOST
-              value: ocs-provider-server.openshift-storage.svc
-            - name: OCS_PROVIDER_SERVER_SERVICE_PORT
-              value: "50051"
+          # Do not set OCS_PROVIDER_SERVER_SERVICE_HOST. socat runs in the host
+          # mount namespace and cannot resolve cluster DNS. Leaving the variable
+          # unset lets Kubernetes inject the Service ClusterIP, which the host
+          # can dial. An explicit DNS name overrides that injection.
           command: ["/bin/bash", "-c"]
           args:
             - |

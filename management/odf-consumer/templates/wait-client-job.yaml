@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wait-odf-client-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        sandoval.lab/module: odf-client
+    spec:
+      serviceAccountName: odf-client-ready-{{ .Values.clusterName }}
+      restartPolicy: OnFailure
+      containers:
+        - name: wait
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          env:
+            - name: CLUSTER_NAME
+              value: {{ .Values.clusterName | quote }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -euo pipefail
+              guest=/tmp/guest.kubeconfig
+              for _ in $(seq 1 120); do
+                if ! oc -n clusters get secret "${CLUSTER_NAME}-admin-kubeconfig" -o jsonpath='{.data.kubeconfig}' | base64 -d > "$guest"; then
+                  echo "admin kubeconfig is not ready"
+                  sleep 10
+                  continue
+                fi
+                phase=$(oc --kubeconfig="$guest" get storageclient hub-odf -o jsonpath='{.status.phase}' 2>/dev/null || true)
+                if [ "$phase" != "Connected" ]; then
+                  echo "storageclient phase=${phase:-missing}"
+                  sleep 10
+                  continue
+                fi
+                if ! oc --kubeconfig="$guest" get sc ocs-storagecluster-ceph-rbd >/dev/null 2>&1; then
+                  echo "ocs-storagecluster-ceph-rbd is not ready"
+                  sleep 10
+                  continue
+                fi
+                if ! oc --kubeconfig="$guest" -n openshift-storage-client get drivers.csi.ceph.io openshift-storage.rbd.csi.ceph.com >/dev/null 2>&1; then
+                  echo "rbd driver is not ready"
+                  sleep 10
+                  continue
+                fi
+                oc --kubeconfig="$guest" patch sc kubevirt-csi-infra-default --type merge -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+                oc --kubeconfig="$guest" patch sc ocs-storagecluster-ceph-rbd --type merge -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+                for drv in openshift-storage.rbd.csi.ceph.com openshift-storage.cephfs.csi.ceph.com openshift-storage.nfs.csi.ceph.com; do
+                  if oc --kubeconfig="$guest" -n openshift-storage-client get drivers.csi.ceph.io "$drv" >/dev/null 2>&1; then
+                    oc --kubeconfig="$guest" -n openshift-storage-client patch drivers.csi.ceph.io "$drv" --type merge -p '{"spec":{"controllerPlugin":{"replicas":1}}}'
+                  fi
+                done
+                oc label managedcluster "$CLUSTER_NAME" odf-client=ready --overwrite
+                echo "labeled ${CLUSTER_NAME} odf-client=ready"
+                exit 0
+              done
+              echo "ODF client did not become ready" >&2
+              exit 1

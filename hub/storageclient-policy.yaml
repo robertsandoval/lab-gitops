@@ -32,4 +32,4 @@ spec:
                     sandoval.lab/module: odf-client
                 spec:
                   storageProviderEndpoint: "10.1.4.40:50061"
-                  onboardingTicket: '{{hub fromSecret "openshift-storage" (printf "odf-onboarding-%s" .ManagedClusterName) "onboarding-token" hub}}'
+                  onboardingTicket: '{{hub fromSecret "openshift-gitops" (printf "odf-onboarding-%s" .ManagedClusterName) "onboarding-token" hub}}'

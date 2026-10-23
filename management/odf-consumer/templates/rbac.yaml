@@ -19,6 +19,18 @@ rules:
     verbs: ["get"]
   - apiGroups: [""]
     resources: ["secrets"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: odf-onboarding-{{ .Values.clusterName }}
+  namespace: openshift-gitops
+  labels:
+    sandoval.lab/module: odf-client
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
     verbs: ["get", "create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -26,6 +38,22 @@ kind: RoleBinding
 metadata:
   name: odf-onboarding-{{ .Values.clusterName }}
   namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: odf-onboarding-{{ .Values.clusterName }}
+subjects:
+  - kind: ServiceAccount
+    name: odf-onboarding-{{ .Values.clusterName }}
+    namespace: openshift-storage
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: odf-onboarding-{{ .Values.clusterName }}
+  namespace: openshift-gitops
   labels:
     sandoval.lab/module: odf-client
 roleRef:

@@ -16,7 +16,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: annotate
-          image: registry.redhat.io/openshift4/ose-cli:v4.22
+          image: registry.redhat.io/openshift4/ose-cli:latest
           env:
             - name: CLUSTER_NAME
               value: {{ .Values.clusterName | quote }}

@@ -4,6 +4,8 @@ resources:
   - ../management/odf-provider
   - ../management/policies/openshift-virtualization
   - ../management/policies/odf-client
+  - ../management/policies/nmstate
+  - ../management/policies/mtv
   - placement.yaml
   - placement-virtualization.yaml
   - placementbinding.yaml
@@ -13,6 +15,8 @@ resources:
   - clusterrolebinding.yaml
   - applicationset-placement-rbac.yaml
   - applicationset-virtualization.yaml
+  - applicationset-nmstate.yaml
+  - applicationset-mtv.yaml
   - applicationset-odf-consumer.yaml
   - applicationset-operator-policy.yaml
   - storageclient-policy.yaml

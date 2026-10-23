@@ -1,0 +1,9 @@
+# Applied after the ODF client is connected. The NMState CRD is owned by
+# kubernetes-nmstate-operator, which ACM installs from the same label.
+apiVersion: nmstate.io/v1
+kind: NMState
+metadata:
+  name: nmstate
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec: {}

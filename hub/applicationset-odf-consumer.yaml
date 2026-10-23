@@ -28,6 +28,11 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: openshift-storage
+      ignoreDifferences:
+        - group: ocs.openshift.io
+          kind: StorageConsumer
+          jsonPointers:
+            - /spec/enable
       syncPolicy:
         automated:
           prune: true

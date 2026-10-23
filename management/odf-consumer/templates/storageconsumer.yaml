@@ -6,8 +6,9 @@ metadata:
   labels:
     sandoval.lab/module: odf-client
 spec:
-  # Leave this disabled until the client has onboarded. Enabling it drops the
-  # onboarding ticket, and a disabled consumer is what issues that ticket.
+  # Created disabled so the onboarding ticket stays available. The wait Job
+  # sets enable=true after StorageClient is Connected. Argo ignores later
+  # changes to this field, so it does not turn the consumer back off.
   enable: false
   storageClasses:
     - name: ocs-storagecluster-ceph-rbd

@@ -37,6 +37,13 @@ spec:
                   sleep 10
                   continue
                 fi
+                enabled=$(oc -n openshift-storage get storageconsumer "$CLUSTER_NAME" -o jsonpath='{.spec.enable}')
+                if [ "$enabled" != "true" ]; then
+                  oc -n openshift-storage patch storageconsumer "$CLUSTER_NAME" --type merge -p '{"spec":{"enable":true}}'
+                  echo "enabled StorageConsumer ${CLUSTER_NAME}"
+                  sleep 10
+                  continue
+                fi
                 if ! oc --kubeconfig="$guest" get sc ocs-storagecluster-ceph-rbd >/dev/null 2>&1; then
                   echo "ocs-storagecluster-ceph-rbd is not ready"
                   sleep 10

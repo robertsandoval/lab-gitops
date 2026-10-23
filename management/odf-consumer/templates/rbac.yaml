@@ -31,7 +31,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
-    verbs: ["get", "create"]
+    verbs: ["get", "create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -72,6 +72,35 @@ metadata:
   namespace: openshift-storage
   labels:
     sandoval.lab/module: odf-client
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+rules:
+  - apiGroups: ["ocs.openshift.io"]
+    resources: ["storageconsumers"]
+    resourceNames: ["{{ .Values.clusterName }}"]
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: odf-client-ready-{{ .Values.clusterName }}
+  namespace: openshift-storage
+  labels:
+    sandoval.lab/module: odf-client
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: odf-client-ready-{{ .Values.clusterName }}
+subjects:
+  - kind: ServiceAccount
+    name: odf-client-ready-{{ .Values.clusterName }}
+    namespace: openshift-storage
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
